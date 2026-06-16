@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/auth";
-import { uploadFile, getFile, cleanUrlPath, generateFileName } from "@/app/lib/r2";
+import { uploadFile, getFile, getFileUrl, cleanUrlPath, generateFileName } from "@/app/lib/r2";
 import * as mm from "music-metadata";
 
 const ALLOWED_TYPES = ["audio/mpeg", "audio/mp3", "audio/wav", "audio/flac"];
@@ -40,9 +40,9 @@ export async function POST(request: Request) {
 
     if (typeof fileField === "string") {
       // 客户端已直传到 R2，传入的是 URL
-      musicUrl = fileField;
-      fileName = decodeURIComponent(musicUrl.split("/").pop() || "");
-      const key = cleanUrlPath(musicUrl);
+      const key = cleanUrlPath(fileField);
+      musicUrl = getFileUrl(key);
+      fileName = decodeURIComponent(key.split("/").pop() || "");
       const fileBuffer = await getFile(key);
       if (!fileBuffer) {
         return NextResponse.json({ error: "无法从 R2 读取音频文件" }, { status: 400 });

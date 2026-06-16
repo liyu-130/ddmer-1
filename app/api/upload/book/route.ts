@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/app/lib/prisma";
 import { getCurrentUser } from "@/app/lib/auth";
-import { uploadFile, getFile, cleanUrlPath, generateFileName } from "@/app/lib/r2";
+import { uploadFile, getFile, getFileUrl, cleanUrlPath, generateFileName } from "@/app/lib/r2";
 import { parseEpubMeta, parseEpubChapters } from "@/app/lib/epub-parser";
 
 const ALLOWED_TYPES = [
@@ -48,9 +48,9 @@ export async function POST(request: Request) {
 
     if (typeof fileField === "string") {
       // 客户端已直传到 R2，传入的是 URL
-      bookUrl = fileField;
-      fileName = decodeURIComponent(bookUrl.split("/").pop() || "");
-      const key = cleanUrlPath(bookUrl);
+      const key = cleanUrlPath(fileField);
+      bookUrl = getFileUrl(key);
+      fileName = decodeURIComponent(key.split("/").pop() || "");
       const fileBuffer = await getFile(key);
       if (!fileBuffer) {
         return NextResponse.json({ error: "无法从 R2 读取图书文件" }, { status: 400 });

@@ -282,6 +282,7 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       {children}
       {playlist[currentIndex] && (
         <audio
+          key={playlist[currentIndex].id}
           ref={audioRef}
           src={playlist[currentIndex].src}
           onTimeUpdate={handleTimeUpdate}
