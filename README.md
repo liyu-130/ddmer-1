@@ -52,9 +52,3 @@ npm run build
 
 参考 [DEPLOY_NOTES.md](./DEPLOY_NOTES.md) 了解部署注意事项。
 
-## 相关链接
-
-- **原项目作者 GitHub：** [github.com/Xinghongia](https://github.com/Xinghongia)
-- **原项目主页：** [Starhiro の小站](https://hiromu.top)
-
-> 基于开源，致敬原创。
