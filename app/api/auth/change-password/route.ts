@@ -4,7 +4,12 @@ import { getCurrentUser, hashPassword, verifyPassword } from "@/app/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser(request);
+    const payload = await getCurrentUser(request);
+    const userId = parseInt(payload.sub as string);
+    if (isNaN(userId)) {
+      return NextResponse.json({ code: 1, message: "无效的令牌" }, { status: 401 });
+    }
+
     const body = await request.json();
     const { oldPassword, newPassword } = body;
 
@@ -23,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
+      where: { id: userId },
       select: { hashed_password: true },
     });
 
@@ -43,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id: userId },
       data: { hashed_password: hashPassword(newPassword) },
     });
 

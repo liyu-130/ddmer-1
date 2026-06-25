@@ -475,7 +475,3 @@ CREATE INDEX "email_verification_email_idx" ON "email_verification"("email");
 
 -- CreateIndex
 CREATE INDEX "email_verification_code_idx" ON "email_verification"("code");
-
--- SeedData: 默认管理员账户（用户名: admin，密码: admin123，首次登录后请务必修改密码）
-INSERT INTO "user" ("username", "hashed_password", "nickname", "is_admin", "created_at", "updated_at")
-VALUES ('admin', '$2b$10$XtrNULa4zsesynXMuflT1.QQJG/KNegCPp3FZCphAowDVOqr.B5LO', '管理员', true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
