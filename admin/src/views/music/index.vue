@@ -177,20 +177,45 @@ async function handleUpload() {
     fd.append("artist", uploadForm.value.artist);
     fd.append("sort", String(uploadForm.value.sort));
 
-    // 大文件（>5MB）直传 R2，绕过 Netlify 6MB 限制
+    // 大文件（>5MB）直传 R2，绕过 Vercel/Netlify 请求体限制
     const audioFile = uploadForm.value.file;
-    if (audioFile && audioFile.size > 5 * 1024 * 1024) {
-      const presigned = await getPresignedUrl({
-        filename: audioFile.name,
-        contentType: audioFile.type || "audio/mpeg",
-        prefix: "uploads/music"
-      });
-      const res = await fetch(presigned.url, {
-        method: "PUT",
-        body: audioFile,
-        headers: { "Content-Type": audioFile.type || "audio/mpeg" }
-      });
-      if (!res.ok) throw new Error("音频文件直传失败");
+    const MAX_DIRECT_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_TOTAL_SIZE = 50 * 1024 * 1024; // 后端限制 50MB
+
+    if (audioFile.size > MAX_TOTAL_SIZE) {
+      throw new Error(`音频文件大小超过 50MB 限制（当前 ${(audioFile.size / 1024 / 1024).toFixed(2)}MB）`);
+    }
+
+    if (audioFile.size > MAX_DIRECT_SIZE) {
+      let presigned;
+      try {
+        presigned = await getPresignedUrl({
+          filename: audioFile.name,
+          contentType: audioFile.type || "audio/mpeg",
+          prefix: "uploads/music"
+        });
+      } catch (e: any) {
+        throw new Error(
+          "获取直传链接失败，请检查 Vercel 环境变量是否配置了 R2_ACCOUNT_ID、R2_ACCESS_KEY_ID、R2_SECRET_ACCESS_KEY、R2_BUCKET_NAME"
+        );
+      }
+
+      let res;
+      try {
+        res = await fetch(presigned.url, {
+          method: "PUT",
+          body: audioFile,
+          headers: { "Content-Type": audioFile.type || "audio/mpeg" }
+        });
+      } catch (e: any) {
+        throw new Error(
+          "直传 R2 失败，通常是 R2 bucket CORS 未开启 PUT 跨域，请在 Cloudflare R2 控制台配置 AllowedMethods 包含 PUT"
+        );
+      }
+
+      if (!res.ok) {
+        throw new Error(`音频文件直传失败，R2 返回状态码 ${res.status}`);
+      }
       fd.append("file", presigned.url.replace(/\?.*$/, ""));
     } else if (audioFile) {
       fd.append("file", audioFile);
@@ -204,7 +229,8 @@ async function handleUpload() {
     uploadVisible.value = false;
     onSearch();
   } catch (err: any) {
-    message("上传失败: " + (err?.response?.data?.error || err?.message || ""), { type: "error" });
+    const msg = err?.response?.data?.error || err?.message || "未知错误";
+    message("上传失败: " + msg, { type: "error" });
   } finally {
     uploading.value = false;
   }
