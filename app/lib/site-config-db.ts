@@ -2,7 +2,7 @@ import { prisma } from "./prisma";
 
 let cachedConfig: Record<string, string> | null = null;
 let cacheTime = 0;
-const CACHE_TTL = 60_000; // 1分钟缓存
+const CACHE_TTL = 5_000; // 5秒缓存，后台修改后前台更快生效
 
 /** 从数据库获取所有站点配置 */
 export async function getDbSiteConfig(): Promise<Record<string, string>> {
