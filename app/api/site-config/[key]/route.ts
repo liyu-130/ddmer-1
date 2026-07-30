@@ -28,9 +28,14 @@ export async function PUT(
     await getCurrentUser(request);
     const { key } = await params;
     const body = await request.json();
-    const config = await prisma.siteConfig.update({
+    const config = await prisma.siteConfig.upsert({
       where: { key },
-      data: {
+      update: {
+        value: body.value,
+        description: body.description,
+      },
+      create: {
+        key,
         value: body.value,
         description: body.description,
       },
