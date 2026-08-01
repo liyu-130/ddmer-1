@@ -1,15 +1,17 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
 
 export type SiteConfigContextType = {
   config: Record<string, string>;
   loading: boolean;
+  refreshConfig: () => Promise<void>;
 };
 
 const SiteConfigContext = createContext<SiteConfigContextType>({
   config: {},
   loading: true,
+  refreshConfig: async () => {},
 });
 
 export function SiteConfigProvider({
@@ -22,23 +24,50 @@ export function SiteConfigProvider({
   const [config, setConfig] = useState<Record<string, string>>(initialConfig);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // 始终从 API 拉取最新配置，initialConfig 仅作初始显示
-    fetch("/api/site-config")
-      .then((res) => res.json())
-      .then((data) => {
-        if (typeof data === "object" && data !== null) {
-          setConfig(data);
-        }
-      })
-      .catch(() => {
-        // 如果 API 拉取失败，保留 initialConfig 作为兜底
-      })
-      .finally(() => setLoading(false));
+  const fetchConfig = useCallback(async () => {
+    try {
+      const res = await fetch("/api/site-config", { cache: "no-store" });
+      const data = await res.json();
+      if (typeof data === "object" && data !== null) {
+        setConfig(data);
+      }
+    } catch {
+      // 如果 API 拉取失败，保留当前配置
+    }
   }, []);
 
+  const refreshConfig = useCallback(async () => {
+    setLoading(true);
+    await fetchConfig();
+    setLoading(false);
+  }, [fetchConfig]);
+
+  useEffect(() => {
+    // 页面挂载时拉取一次
+    fetchConfig().finally(() => setLoading(false));
+
+    // 页面切换回前台时自动刷新（后台修改配置后切回页面就生效）
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchConfig();
+      }
+    };
+    // 窗口获得焦点时刷新（覆盖部分浏览器行为）
+    const handleFocus = () => {
+      fetchConfig();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [fetchConfig]);
+
   return (
-    <SiteConfigContext.Provider value={{ config, loading }}>
+    <SiteConfigContext.Provider value={{ config, loading, refreshConfig }}>
       {children}
     </SiteConfigContext.Provider>
   );
