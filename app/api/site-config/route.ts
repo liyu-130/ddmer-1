@@ -9,7 +9,13 @@ export async function GET() {
   for (const c of configs) {
     result[c.key] = c.value;
   }
-  return NextResponse.json(result);
+  return NextResponse.json(result, {
+    headers: {
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      "Pragma": "no-cache",
+      "Expires": "0",
+    },
+  });
 }
 
 export async function POST(request: NextRequest) {
