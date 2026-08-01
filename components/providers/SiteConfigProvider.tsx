@@ -56,13 +56,25 @@ export function SiteConfigProvider({
     const handleFocus = () => {
       fetchConfig();
     };
+    // 从 bfcache 恢复时刷新（移动端返回/前进时常见）
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        fetchConfig();
+      }
+    };
 
     document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("focus", handleFocus);
+    window.addEventListener("pageshow", handlePageShow);
+
+    // 定时轮询：每 15 秒拉取一次，覆盖同标签页内从后台导航到前台的情况
+    const interval = setInterval(fetchConfig, 15_000);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("pageshow", handlePageShow);
+      clearInterval(interval);
     };
   }, [fetchConfig]);
 
