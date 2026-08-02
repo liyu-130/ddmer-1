@@ -50,5 +50,5 @@ export const siteConfig = {
 
   // 分类标题
   chatterTitle: "留言",
-  chatterDescription: "生活、技术、随想的碎片记录",
+  chatterDescription: "记录生活、技术与随想",
 };
