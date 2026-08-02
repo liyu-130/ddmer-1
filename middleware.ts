@@ -33,7 +33,8 @@ export function middleware(request: NextRequest) {
       "/api/chatters",
       "/api/messages/count",
       "/api/friend-links/public",
-      "/api/site-config/list",
+      // 注意: /api/site-config/list 需要认证，不应公开缓存
+      // "/api/site-config/list",
       "/api/albums",
       "/api/projects",
       "/api/bookmarks",
