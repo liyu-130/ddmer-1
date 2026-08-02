@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { useConfigValue } from "@/components/providers/SiteConfigProvider";
+import { siteConfig } from "@/siteConfig";
 
 import SettingsPanel from "@/components/ui/SettingsPanel";
 import {
@@ -50,6 +52,8 @@ export default function Navbar() {
   const settingsRef = useRef<HTMLDivElement>(null);
   const [easterEgg, setEasterEgg] = useState(false);
   const clickTimes = useRef<number[]>([]);
+  const authorName = useConfigValue("authorName", siteConfig.authorName);
+  const siteTitle = `${authorName || "博主"} の小站`;
 
   const handleLogoClick = useCallback(() => {
     const now = Date.now();
@@ -151,7 +155,7 @@ export default function Navbar() {
         msg.innerHTML = `
           <div style="font-size:48px;margin-bottom:12px">🎉</div>
           <div style="font-size:24px;font-weight:bold;margin-bottom:8px">恭喜你发现了彩蛋！</div>
-          <div style="font-size:14px;opacity:0.8">连续点击 Logo 7 次触发 · Ddmer の小站</div>
+          <div style="font-size:14px;opacity:0.8">连续点击 Logo 7 次触发 · ${siteTitle}</div>
         `;
         msg.style.cssText = `
           position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
@@ -202,7 +206,7 @@ export default function Navbar() {
                 style={easterEgg ? { animation: "spin 0.5s ease-in-out 6, rainbow 3s linear" } : undefined}
               >
                 <span className={`text-xl font-bold tracking-tight ${easterEgg ? "text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500" : "text-slate-800 dark:text-white"}`} style={{ fontFamily: "'Noto Serif SC', serif" }}>
-                  LIYU
+                  {authorName || "博主"}
                 </span>
                 <span className={`text-xl font-bold ${easterEgg ? "text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500" : "text-sky-500 dark:text-sky-400"}`} style={{ fontFamily: "serif" }}>
                   の
@@ -219,7 +223,7 @@ export default function Navbar() {
                 style={easterEgg ? { animation: "spin 0.5s ease-in-out 6, rainbow 3s linear" } : undefined}
               >
                 <span className={`text-xl font-bold tracking-tight ${easterEgg ? "text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500" : "text-slate-800 dark:text-white"}`} style={{ fontFamily: "'Noto Serif SC', serif" }}>
-                  LIYU
+                  {authorName || "博主"}
                 </span>
                 <span className={`text-xl font-bold ${easterEgg ? "text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500" : "text-sky-500 dark:text-sky-400"}`} style={{ fontFamily: "serif" }}>
                   の
@@ -347,4 +351,4 @@ export default function Navbar() {
       </AnimatePresence>
     </>
   );
-}
+    }
