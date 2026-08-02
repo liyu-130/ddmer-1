@@ -7,8 +7,9 @@ function getSecretKey(): Uint8Array {
     return new TextEncoder().encode(process.env.SECRET_KEY);
   }
   // 使用固定派生密钥作为 fallback，避免每次重启导致所有用户 token 失效
+  // 生产环境请务必设置 SECRET_KEY 环境变量，不要使用默认 fallback
   const fallbackKey = createHash("sha256")
-    .update("Ddmer-Kirameku-Blog-Default-Secret-Key-v1")
+    .update("Blog-Default-Secret-Key-Please-Change-In-Production")
     .digest("hex");
   return new TextEncoder().encode(fallbackKey);
 }
